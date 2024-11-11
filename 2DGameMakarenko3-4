@@ -1,0 +1,429 @@
+package tile;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.imageio.ImageIO;
+import main.GamePanel;
+
+public class TileManager {
+	
+	GamePanel gp;
+	Title[] tile;
+	int mapTileNum[][];
+
+
+	public TileManager(GamePanel gp) {
+		
+		this.gp = gp;
+
+		tile = new Title[10];
+		mapTileNum = new int[gp.maxScreenCol][gp.maxScreenRow];
+
+		getTileImage();
+		loadMap("/maps/map01.txt");
+
+	}
+
+	public void getTileImage() {
+
+		try {
+
+			tile[0] = new Title();
+			tile[0].image = ImageIO.read(getClass().getResourseAsStream("/tiles/grass.png"));
+
+			tile[1] = new Title();
+			tile[1].image = ImageIO.read(getClass().getResourseAsStream("/tiles/wall.png"));
+
+			tile[2] = new Title();
+			tile[2].image = ImageIO.read(getClass().getResourseAsStream("/tiles/water.png"));	
+
+		}catch(IOException e) {
+			e.printStrackTrace();
+		}
+	}
+	public void loadMap(String filePath) {
+	
+		try {
+			InputStream is = getClass().getResourceAsStream(filePath);
+			BufferedReader br = new BufferedReader(new InputStreamReader(is));
+
+			int col = 0;
+			int row = 0;
+
+			while(col < gp.maxScreenCol && row < gp.maxScreenRow) {
+				
+				String line = br.readLine();
+
+				while(col < gp.maxScreenCol) {
+					
+					String number[] = line.split(" ");
+
+					int num = Integer.parseInt(numbers[col]);
+
+					mapTileNum[col][row] = num;
+					col++;
+				}
+				if(col == gp.maxScreenCol) {
+					col == 0;
+					row++;
+				}	
+			}
+			br.close();
+
+		}catch(Exception e){
+
+		}	
+	
+
+	}
+	public void draw(Graphics2D g2) {
+	
+		int col = 0;
+		int row = 0;
+		int x = 0;
+		int y = 0;
+
+		while(col < gp.maxScreenCol && row < gp.maxScreenRow){
+
+			int tileNum = mapTileNum[col][row];
+
+			g2.drawImage(title[tileNum].image, x, y, gp.tileSize, gp.tileSize, null);
+			col++;
+			x += gp.tileSize;
+
+			if(col == gp.maxScreenCol) {
+				col = 0;
+				x = 0;
+				row++;
+				y += gp.tileSize;
+			}		
+
+		}
+
+
+
+		g2.drawImage(title[0].image, 0, 0, gp.tileSize, gp.tileSize, null);
+		g2.drawImage(title[1].image, 48, 0, gp.tileSize, gp.tileSize, null);
+		g2.drawImage(title[2].image, 96, 0, gp.tileSize, gp.tileSize, null);
+	}
+
+}
+
+package tile;
+
+import java.awt.image.BufferedImage;
+
+public class Title {
+    
+	public BufferedImage image;
+	public boolean collision = false;
+
+
+}
+
+package main;
+
+import javax.swing.JFrame;
+
+public class Main {
+
+	public static void main(String[] args) {
+		
+		
+		JFrame window = new JFrame();
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.setResizable(false);
+		window.setTitle("2D game");
+		
+		GamePanel gamePanel = new GamePanel();
+		window.add(gamePanel);
+		window.pack();
+		window.setLocationRelativeTo(null);
+		window.setVisible(true);
+		
+		
+		gamePanel.startGameThread();
+	}
+	
+	
+}
+
+package main;
+
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+public class KeyHendler implements KeyListener{
+
+	public boolean upPressed,downPressed,leftPressed,rightPressed;
+	
+	@Override
+	public void keyTyped(KeyEvent e) {
+
+		
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+			int code = e.getKeyCode();
+		if(code == KeyEvent.VK_W) {
+			upPressed = true;
+		}
+		if(code == KeyEvent.VK_S) {
+			downPressed = true;
+		}
+		if(code == KeyEvent.VK_A) {
+			leftPressed = true;
+		}
+		if(code == KeyEvent.VK_D) {
+			rightPressed = true;
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+
+		int code = e.getKeyCode();
+		if(code == KeyEvent.VK_W) {
+			upPressed = false;
+		}
+		if(code == KeyEvent.VK_S) {
+			downPressed = false;
+		}
+		if(code == KeyEvent.VK_A) {
+			leftPressed = false;
+		}
+		if(code == KeyEvent.VK_D) {
+			rightPressed = false;
+		}
+	}
+	
+	
+
+}
+
+package main;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.event.KeyListener;
+import javax.swing.JPanel;
+
+
+
+
+public class GamePanel extends JPanel implements Runnable{
+
+	final int originalTitleSize = 10;
+	final int scale = 3;
+	
+	public final int tileSize = originalTitleSize * scale;
+	final int maxScreenCol = 16;
+	final int maxScreenRow = 12;
+	final int screenWidth = tileSize * maxScreenCol;
+	final int screenHeight = tileSize * maxScreenRow;
+	
+	int FPS = 60;
+	KeyHendler keyH = new KeyHendler();
+	Thread gameThread;
+	Player player - new Player(this, keyH)
+	
+	int playerX = 100;
+	int playerY = 100;
+	int playerSpeed = 4;
+	
+	
+	public GamePanel() {
+		
+		this.setPreferredSize(new Dimension(screenWidth, screenHeight));
+		this.setBackground(Color.black);
+		this.setDoubleBuffered(true);
+		this.addKeyListener(keyH);
+		this.setFocusable(true);
+		
+		
+	}
+	
+	
+	public void startGameThread() {
+		gameThread = new Thread(this);
+		gameThread.start();
+	}
+
+
+	@Override
+	public void run() {
+		double drawInterval = 1000000000/FPS;
+		double nextDrawTime = System.nanoTime() + drawInterval;
+		while(gameThread != null) {
+			update();
+			
+			repaint();
+			
+			
+			try {
+			double remainingTime = nextDrawTime - System.nanoTime();
+			remainingTime = remainingTime/1000000;
+			
+			if(remainingTime <0 ) {
+				remainingTime = 0;
+			}
+				
+			Thread.sleep((long) remainingTime);
+			 nextDrawTime += drawInterval;
+			}catch(InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+		public void update() {
+			
+			
+		
+	}
+	
+	public void paintComponent(Graphics g) {
+		super.paintComponent(g);
+		
+		Graphics2D g2 = (Graphics2D)g;
+		
+		g2.setColor(Color.white);
+		
+		g2.fillRect(playerX, playerY, tileSize, tileSize);
+		
+		g2.dispose();
+	}
+}
+
+package entity;
+
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+import javax.swing.plaf.basic.BasicComboBoxUI.KeyHandler;
+
+import main.GamePanel;
+
+public class Player extends Entity{
+
+	
+	GamePanel gp;
+	KeyHandler keyH;
+	
+	public Player(GamePanel gp, KeyHandler keyH) {
+		this.gp = gp;
+		this.keyH = keyH;
+		
+		setDefaultValues();
+		getPlayerImage();
+	}
+	
+public void setDefaultValues() {
+	x = 100;
+	y = 100;
+	speed = 4;
+	direction = "down";
+	}
+public void getPlayerImage() {
+	try {
+		up1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_up_1.png"));
+		up2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_up_2.png"));
+		down1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_down_1.png"));
+		down2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_down_2.png"));
+		left1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_left_1.png"));
+		left2 = ImageIO.read(getClass().getResourceAsStream("/player/boy_left_2.png"));
+		right1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_right_1.png"));
+		right1 = ImageIO.read(getClass().getResourceAsStream("/player/boy_right_2.png"));
+		
+	} catch(IOException e) {
+		e.printStackTrace()
+	}
+}
+	public void update() {
+		if(keyH.upPressed == true) {
+		direction = "up";
+			y -= speed;
+		}else if(keyH.downPressed) {
+			direction = "down";
+			y += speed;
+		}else if(keyH.rightPressed) {
+			direction = "left";
+			x += speed;
+		}else if(keyH.leftPressed) {
+			direction = "right";
+			x  -= speed;
+		}
+		spriteCounter++;
+		if(spriteCounter > 12) {
+			if(spriteNum == 1) {
+				spriteNum = 2;
+			}
+			else if(spriteNum == 2) {
+				spriteNum = 1;
+			}
+			spriteCounter = 0;
+		}
+	}
+	public void draw(Graphics2d g2) {
+		//g2.setColor(Color.white);
+		//g2.fillRect(x, y, gp.tileSize, gp.tileSize);
+	BufferedImage image = null;
+	
+	switch(direction) {
+	case "up":
+		if(spriteNum == 1) {
+			image = up1;
+		}
+		if(spriteNum == 2) {
+			image = up2;
+		}
+		break;
+	case "down":
+		if(spriteNum == 1) {
+		image = down1;
+		}
+		if(spriteNum == 2) {
+			image = down2;
+		}
+		break;
+	case "left":
+		if(spriteNum == 1) {
+			image = left1;
+		}
+		if(spriteNum == 2) {
+			image = left2;
+		}
+		break;
+	case "right":
+		if(spriteNum == 1) {
+			image = right1;
+		}
+		if(spriteNum == 2) {
+			image = right2;
+		}
+		break;
+	}
+	g2.drawImage(image, x, y, gp.tileSize, gp.tileSize, null);
+	}
+}
+
+
+package entity;
+
+import java.awt.image.BufferedImage;
+
+public class Entity {
+
+	public int x, y;
+	public int speed;
+	
+	public BufferedImage up1, up2, down1, down2, left1, left2, right1, right2;
+	public String direction;
+	
+	public int spriteCounter = 0;
+	public int spriteNum = 1;
+}
